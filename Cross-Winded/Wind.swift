@@ -8,9 +8,9 @@
 import Foundation
 
 nonisolated struct Wind: Hashable {
-    let directionDegrees: Double
-    let speedKnots: Double
-    let gustKnots: Double?
+    var directionDegrees: Double
+    var speedKnots: Double
+    var gustKnots: Double? = nil
     
     struct FormatStyle: Foundation.FormatStyle {
         func format(_ value: Wind) -> String {
