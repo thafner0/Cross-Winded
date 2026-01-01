@@ -14,15 +14,15 @@ struct WindFormatTests {
     @Test(arguments:
             zip(
                 [
-                    Wind(directionDegrees: 24, speedKnots: 23, gustKnots: 45),
-                    Wind(directionDegrees: 250, speedKnots: 2, gustKnots: 5),
-                    Wind(directionDegrees: 009, speedKnots: 150, gustKnots: 342),
-                    Wind(directionDegrees: 171, speedKnots: 7, gustKnots: 23),
-                    Wind(directionDegrees: 65, speedKnots: 8, gustKnots: 255),
-                    Wind(directionDegrees: 87, speedKnots: 89, gustKnots: 101),
-                    Wind(directionDegrees: 210, speedKnots: 5, gustKnots: nil),
-                    Wind(directionDegrees: 034, speedKnots: 18, gustKnots: nil),
-                    Wind(directionDegrees: 145, speedKnots: 330, gustKnots: nil)
+                    try Wind(directionDegrees: 24, speedKnots: 23, gustKnots: 45),
+                    try Wind(directionDegrees: 250, speedKnots: 2, gustKnots: 5),
+                    try Wind(directionDegrees: 009, speedKnots: 150, gustKnots: 342),
+                    try Wind(directionDegrees: 171, speedKnots: 7, gustKnots: 23),
+                    try Wind(directionDegrees: 65, speedKnots: 8, gustKnots: 255),
+                    try Wind(directionDegrees: 87, speedKnots: 89, gustKnots: 101),
+                    try Wind(directionDegrees: 210, speedKnots: 5, gustKnots: nil),
+                    try Wind(directionDegrees: 034, speedKnots: 18, gustKnots: nil),
+                    try Wind(directionDegrees: 145, speedKnots: 330, gustKnots: nil)
                 ],
                 [
                     "02423G45KT",
@@ -56,16 +56,16 @@ struct WindFormatTests {
                     "00315G24KT"
                 ],
                 [
-                    Wind(directionDegrees: 270, speedKnots: 9),
-                    Wind(directionDegrees: 230, speedKnots: 14),
-                    Wind(directionDegrees: 10, speedKnots: 19),
-                    Wind(directionDegrees: 9, speedKnots: 2),
-                    Wind(directionDegrees: 360, speedKnots: 400),
-                    Wind(directionDegrees: 0, speedKnots: 0),
-                    Wind(directionDegrees: 0, speedKnots: 0),
-                    Wind(directionDegrees: 310, speedKnots: 15, gustKnots: 25),
-                    Wind(directionDegrees: 014, speedKnots: 21, gustKnots: 29),
-                    Wind(directionDegrees: 3, speedKnots: 15, gustKnots: 24)
+                    try Wind(directionDegrees: 270, speedKnots: 9),
+                    try Wind(directionDegrees: 230, speedKnots: 14),
+                    try Wind(directionDegrees: 10, speedKnots: 19),
+                    try Wind(directionDegrees: 9, speedKnots: 2),
+                    try Wind(directionDegrees: 360, speedKnots: 400),
+                    try Wind(directionDegrees: 0, speedKnots: 0),
+                    try Wind(directionDegrees: 0, speedKnots: 0),
+                    try Wind(directionDegrees: 310, speedKnots: 15, gustKnots: 25),
+                    try Wind(directionDegrees: 014, speedKnots: 21, gustKnots: 29),
+                    try Wind(directionDegrees: 3, speedKnots: 15, gustKnots: 24)
                 ]
             )
     )
@@ -86,14 +86,14 @@ struct WindFormatTests {
                     "000100G150"
                 ],
                 [
-                    Wind(directionDegrees: 345, speedKnots: 4),
-                    Wind(directionDegrees: 54, speedKnots: 23),
-                    Wind(directionDegrees: 4, speedKnots: 320),
-                    Wind(directionDegrees: 0, speedKnots: 0),
-                    Wind(directionDegrees: 0, speedKnots: 0),
-                    Wind(directionDegrees: 230, speedKnots: 10, gustKnots: 34),
-                    Wind(directionDegrees: 43, speedKnots: 24, gustKnots: 45),
-                    Wind(directionDegrees: 0, speedKnots: 100, gustKnots: 150)
+                    try Wind(directionDegrees: 345, speedKnots: 4),
+                    try Wind(directionDegrees: 54, speedKnots: 23),
+                    try Wind(directionDegrees: 4, speedKnots: 320),
+                    try Wind(directionDegrees: 0, speedKnots: 0),
+                    try Wind(directionDegrees: 0, speedKnots: 0),
+                    try Wind(directionDegrees: 230, speedKnots: 10, gustKnots: 34),
+                    try Wind(directionDegrees: 43, speedKnots: 24, gustKnots: 45),
+                    try Wind(directionDegrees: 0, speedKnots: 100, gustKnots: 150)
                 ]
             )
     )
@@ -120,7 +120,7 @@ struct WindFormatTests {
                 "11133g43KT"
             ]
     )
-    func invalidValues(input: String) async throws {
+    func invalidFormat(input: String) async throws {
         #expect(throws: Wind.FormatStyle.Strategy.ParseError.inputInUnexpectedFormat) {
             try formatStyle.parseStrategy.parse(input)
         }
@@ -128,5 +128,27 @@ struct WindFormatTests {
     
     init() {
         self.formatStyle = Wind.FormatStyle()
+    }
+    
+    @Test(arguments:
+            zip(
+                [
+                    "44502",
+                    "38910KT",
+                    "34042G20",
+                    "03423G10KT"
+                ],
+                [
+                    Wind.InconsistentValueError.directionValueOutOfBounds,
+                    .directionValueOutOfBounds,
+                    .gustSpeedValueLessThanStandardSpeedValue,
+                    .gustSpeedValueLessThanStandardSpeedValue
+                ]
+            )
+    )
+    func invalidValues(input: String, expectedError: Wind.InconsistentValueError) async throws {
+        #expect(throws: expectedError) {
+            try formatStyle.parseStrategy.parse(input)
+        }
     }
 }

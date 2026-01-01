@@ -73,7 +73,7 @@ nonisolated struct Wind: Hashable {
                 let windSpeed = match.2
                 let gustSpeed = match.3
                 
-                return Wind(directionDegrees: windDirection, speedKnots: windSpeed, gustKnots: gustSpeed)
+                return try Wind(directionDegrees: windDirection, speedKnots: windSpeed, gustKnots: gustSpeed)
             }
             
             enum ParseError: Error {
@@ -81,6 +81,33 @@ nonisolated struct Wind: Hashable {
                 case inputInUnexpectedFormat
             }
         }
+    }
+    
+    init(directionDegrees: Double, speedKnots: Double, gustKnots: Double? = nil) throws {
+        guard (0...360).contains(directionDegrees) else {
+            throw InconsistentValueError.directionValueOutOfBounds
+        }
+        guard speedKnots >= 0 else {
+            throw InconsistentValueError.speedValueOutOfBounds
+        }
+        if let gustKnots {
+            guard gustKnots >= speedKnots else {
+                throw InconsistentValueError.gustSpeedValueLessThanStandardSpeedValue
+            }
+        }
+        self.directionDegrees = directionDegrees
+        self.speedKnots = speedKnots
+        if gustKnots == 0 || gustKnots == speedKnots {
+            self.gustKnots = nil
+        } else {
+            self.gustKnots = gustKnots
+        }
+    }
+    
+    enum InconsistentValueError: Error {
+        case directionValueOutOfBounds
+        case speedValueOutOfBounds
+        case gustSpeedValueLessThanStandardSpeedValue
     }
 }
 
