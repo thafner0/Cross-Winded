@@ -22,7 +22,9 @@ struct WindFormatTests {
                     try Wind(directionDegrees: 87, speedKnots: 89, gustKnots: 101),
                     try Wind(directionDegrees: 210, speedKnots: 5, gustKnots: nil),
                     try Wind(directionDegrees: 034, speedKnots: 18, gustKnots: nil),
-                    try Wind(directionDegrees: 145, speedKnots: 330, gustKnots: nil)
+                    try Wind(directionDegrees: 145, speedKnots: 330, gustKnots: nil),
+                    try Wind(directionDegrees: 0, speedKnots: 150),
+                    try Wind(directionDegrees: 180, speedKnots: 20, gustKnots: 40)
                 ],
                 [
                     "02423G45KT",
@@ -33,7 +35,9 @@ struct WindFormatTests {
                     "08789G101KT",
                     "21005KT",
                     "03418KT",
-                    "145330KT"
+                    "145330KT",
+                    "000150KT",
+                    "18020G40KT"
                 ]
             )
     )

@@ -9,9 +9,9 @@ import Foundation
 import RegexBuilder
 
 nonisolated struct Wind: Hashable {
-    var directionDegrees: Double
-    var speedKnots: Double
-    var gustKnots: Double? = nil
+    var northSouthComponent: Double
+    var eastWestComponent: Double
+    var gustMultiplier: Double? = nil
     
     struct FormatStyle: ParseableFormatStyle {
         var parseStrategy: Strategy = Strategy()
@@ -25,9 +25,30 @@ nonisolated struct Wind: Hashable {
                 .rounded(increment: 1)
                 .precision(.integerLength(2...3))
             
-            var base = "\(value.directionDegrees.formatted(degreeFormat))\(value.speedKnots.formatted(speedFormat))"
-            if let gustKnots = value.gustKnots {
-                base += "G\(gustKnots.formatted(speedFormat))"
+            let mathDegreeDirection: Double
+            if value.eastWestComponent == 0 {
+                mathDegreeDirection = value.northSouthComponent.sign == .minus ? 270 : 90
+            } else {
+                let initialDirection = atan(value.northSouthComponent / value.eastWestComponent) * 180 / .pi
+                if value.eastWestComponent.sign == .minus {
+                    mathDegreeDirection = initialDirection + 180
+                } else {
+                    mathDegreeDirection = initialDirection + 360
+                }
+            }
+            
+            let compassDegrees = (90 - mathDegreeDirection + 360).truncatingRemainder(dividingBy: 360)
+            let speed = sqrt(value.northSouthComponent * value.northSouthComponent + value.eastWestComponent * value.eastWestComponent)
+            let gustSpeed: Double?
+            if let gustMultiplier = value.gustMultiplier {
+                gustSpeed = speed * gustMultiplier
+            } else {
+                gustSpeed = nil
+            }
+            
+            var base = "\(compassDegrees.formatted(degreeFormat))\(speed.formatted(speedFormat))"
+            if let gustSpeed {
+                base += "G\(gustSpeed.formatted(speedFormat))"
             }
             return base + "KT"
         }
@@ -95,12 +116,12 @@ nonisolated struct Wind: Hashable {
                 throw InconsistentValueError.gustSpeedValueLessThanStandardSpeedValue
             }
         }
-        self.directionDegrees = directionDegrees
-        self.speedKnots = speedKnots
-        if gustKnots == 0 || gustKnots == speedKnots {
-            self.gustKnots = nil
+        self.northSouthComponent = speedKnots * cos(.pi * directionDegrees / 180)
+        self.eastWestComponent = speedKnots * sin(.pi * directionDegrees / 180)
+        if let gustKnots, gustKnots != 0, gustKnots != speedKnots {
+            self.gustMultiplier = gustKnots / speedKnots
         } else {
-            self.gustKnots = gustKnots
+            self.gustMultiplier = nil
         }
     }
     
